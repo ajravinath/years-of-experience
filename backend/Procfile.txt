@@ -1,3 +1,0 @@
-"script":{
- "start":"node dist/index.js"
-}
