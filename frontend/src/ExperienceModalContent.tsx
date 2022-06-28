@@ -1,26 +1,25 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import axios from 'axios'
-import { useCallback, useEffect, useState } from 'react'
+import { isDate } from 'date-fns'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useForm } from 'react-hook-form'
+import { useNavigate, useParams } from 'react-router-dom'
 import * as yup from 'yup'
 import { ExperienceItem } from './Experience'
 import TextAreaInput from './TextAreaInput'
 import TextInput from './TextInput'
 
-type Props = { experience?: ExperienceItem; showModal?: boolean }
+type Props = {
+  experience?: ExperienceItem
+  show: boolean
+  onRequestClose: (refetch?: boolean) => void
+}
 
 const validationSchema = yup.object().shape({
   title: yup.string().trim().required('Title is a required field'),
   company: yup.string().trim().required('Company is a required field'),
   currentlyWorking: yup.bool(),
-  logo: yup
-    .mixed()
-    .required()
-    .test('fileSize', 'The file is too large', (value) => {
-      if (!value || value.length <= 0) return true
-      return value[0].size <= 2000
-    }),
   startDate: yup
     .date()
     .nullable()
@@ -43,7 +42,7 @@ const validationSchema = yup.object().shape({
 })
 
 const ExperienceModalContent = (props: Props) => {
-  const { showModal, experience } = props
+  const { show, onRequestClose, experience } = props
   const defaultValues = {
     title: experience?.title || '',
     company: experience?.company || '',
@@ -66,6 +65,7 @@ const ExperienceModalContent = (props: Props) => {
   })
   const [files, setFiles] = useState<{ file: File; preview: string }[]>([])
   const currentlyWorking = watch('currentlyWorking')
+  const { id } = useParams()
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(
@@ -89,31 +89,57 @@ const ExperienceModalContent = (props: Props) => {
   })
 
   const onSubmit = async (data: typeof defaultValues) => {
-    console.log(data)
     const imageFile = files?.[0]
+
+    const body = {
+      title: data.title,
+      company: data.company,
+      currentlyWorking: data.currentlyWorking,
+      startDate: data.startDate,
+      endDate: isDate(data.endDate) ? data.endDate : null,
+      description: data.description,
+    }
+
     const formData = new FormData()
+    formData.append('data', JSON.stringify(body))
 
-    formData.append('title', data.title)
-    formData.append('company', data.company)
-    formData.append('currentlyWorking', data.currentlyWorking ? 'true' : 'false')
-    formData.append('startDate', data.startDate)
-    formData.append('endDate', data.endDate)
-    formData.append('image', imageFile?.file ?? null)
-    formData.append('description', data.description)
-
-    await axios.post('http://localhost:8000/api/profile/', formData)
+    if (experience) {
+      console.log('image file', imageFile)
+      if (imageFile?.file) {
+        formData.append('image', imageFile.file)
+      }
+      try {
+        await axios.put(
+          `http://localhost:8000/api/profile/${id}/experience/${experience.id}`,
+          formData,
+        )
+        onRequestClose(true)
+      } catch (error) {
+        console.log('something went wrong')
+      }
+    } else {
+      formData.append('image', imageFile?.file ?? null)
+      try {
+        await axios.post(`http://localhost:8000/api/profile/${id}/experience`, formData)
+        onRequestClose(true)
+      } catch (error) {
+        console.log('something went wrong')
+      }
+    }
   }
 
   useEffect(() => {
-    showModal === false && reset()
-  }, [showModal])
+    show === false && reset()
+  }, [show])
+
+  const experienceHasImage = Boolean(experience && experience.image)
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} encType='multipart/form-data'>
       <div className='flex flex-row'>
         <div className='flex basis-1/6 flex-col'>
           <div {...getRootProps({ className: 'w-[150px] h-[150px]' })}>
-            {files.length > 0 && (
+            {files.length > 0 ? (
               <img
                 alt='profile'
                 src={files[0].preview}
@@ -122,24 +148,36 @@ const ExperienceModalContent = (props: Props) => {
                 }}
                 className='border-2 w-[150px] mt-3'
               />
+            ) : (
+              <>
+                {experienceHasImage && (
+                  <img
+                    alt='profile'
+                    src={`http://localhost:8000/${experience?.image}`}
+                    className='border-2 w-[150px] mt-3'
+                  />
+                )}
+              </>
             )}
             <input {...getInputProps()} />
             <p className='text-center h-1/2 text-sm p-2 border'>
               Drag drop company logo here, or click to select files
             </p>
+            {fileRejections.map(
+              ({ errors }, idx) =>
+                errors && (
+                  <Fragment key={idx}>
+                    {errors.map((error) => (
+                      <span key={error.code} className='text-xs mt-1 text-red-400'>
+                        {error.code === 'file-too-large'
+                          ? 'File is larger than 2MB'
+                          : error.message}
+                      </span>
+                    ))}
+                  </Fragment>
+                ),
+            )}
           </div>
-          {fileRejections.map(
-            ({ errors }) =>
-              errors && (
-                <>
-                  {errors.map((error) => (
-                    <span key={error.code} className='text-xs mt-1 text-red-400'>
-                      {error.code === 'file-too-large' ? 'File is larger than 2MB' : error.message}
-                    </span>
-                  ))}
-                </>
-              ),
-          )}
         </div>
         <div className='flex flex-col basis-5/6 ml-12'>
           <TextInput

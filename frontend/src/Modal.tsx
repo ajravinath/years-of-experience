@@ -3,29 +3,32 @@ import ReactModal from 'react-modal'
 
 type Props = {
   showModal: boolean
-  setShowModal: (open: boolean) => void
-  content: ReactElement<{ showModal: boolean }>
+  onRequestClose: (refetch?: boolean) => void
+  renderContent: (
+    show: boolean,
+    onRequestClose: (refetch?: boolean) => void,
+  ) => ReactElement<{ showModal: boolean }>
   title: string
 }
 
 ReactModal.setAppElement('#root')
 
 const Modal = (props: Props) => {
-  const { showModal, setShowModal, content, title } = props
+  const { showModal, onRequestClose, renderContent, title } = props
   return (
     <ReactModal
-      className='modal-content'
+      className='modal-content z-10'
       overlayClassName='modal-overlay'
       shouldCloseOnEsc
       shouldCloseOnOverlayClick
       isOpen={showModal}
-      onRequestClose={() => setShowModal(false)}
+      onRequestClose={() => onRequestClose()}
       contentLabel='Modal'
     >
       <div className='flex flex-col h-full'>
         <div className='flex'>
           <div className='text-2xl'>{title}</div>
-          <button className='ml-auto' onClick={() => setShowModal(false)}>
+          <button className='ml-auto' onClick={() => onRequestClose()}>
             <svg
               xmlns='http://www.w3.org/2000/svg'
               viewBox='0 0 24 24'
@@ -40,7 +43,7 @@ const Modal = (props: Props) => {
           </button>
         </div>
         <hr className='mt-4' />
-        <div className='mt-4'>{React.cloneElement(content, { showModal }, null)}</div>
+        <div className='mt-4'>{renderContent(showModal, onRequestClose)}</div>
       </div>
     </ReactModal>
   )

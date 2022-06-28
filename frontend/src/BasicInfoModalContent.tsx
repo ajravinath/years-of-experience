@@ -1,6 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import { differenceInYears } from 'date-fns'
-import { useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
@@ -9,11 +9,12 @@ import TextInput from './TextInput'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
-type Props = { showModal?: boolean; info: Info }
+type Props = { info?: Info; show: boolean; onRequestClose: (refetch?: boolean) => void }
 
 const validationSchema = yup.object().shape({
   firstName: yup.string().trim().required('First name is a required field'),
   lastName: yup.string().trim().required('Last name is a required field'),
+  title: yup.string().trim(),
   dob: yup
     .date()
     .nullable()
@@ -29,11 +30,12 @@ const validationSchema = yup.object().shape({
 })
 
 const BasicInfoModalContent = (props: Props) => {
-  const { showModal, info } = props
+  const { show, onRequestClose, info } = props
 
   const defaultValues = {
     firstName: info?.firstName || '',
     lastName: info?.lastName || '',
+    title: info?.title || '',
     dob: info?.dob || '',
   }
 
@@ -75,37 +77,57 @@ const BasicInfoModalContent = (props: Props) => {
   })
 
   const onSubmit = async (data: typeof defaultValues) => {
-    console.log(data)
     const imageFile = files[0]
-    if (imageFile.file) {
-      const formData = new FormData()
 
-      formData.append('firstName', data.firstName)
-      formData.append('lastName', data.lastName)
-      formData.append('title', 'Software Engineer')
-      formData.append('dob', data.dob)
-      formData.append('image', imageFile.file)
+    const body = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      title: data.title,
+      dob: data.dob,
+    }
+    const formData = new FormData()
+    formData.append('data', JSON.stringify(body))
+
+    if (info) {
+      console.log('info.id: ', info.id)
+      if (imageFile?.file) {
+        formData.append('image', imageFile.file)
+      } else if (!info.image) {
+        setFileError('Profile image is a required field')
+      }
       try {
-        const { data } = await axios.post('http://localhost:8000/api/profile', formData)
+        const { data } = await axios.put(`http://localhost:8000/api/profile/${info.id}`, formData)
         navigate(`/${data.id}/profile`, { replace: true })
+        onRequestClose(true)
       } catch (error) {
         console.log('something went wrong')
       }
     } else {
-      setFileError('Profile image is a required field')
+      if (imageFile?.file) {
+        formData.append('image', imageFile.file)
+        try {
+          const { data } = await axios.post('http://localhost:8000/api/profile', formData)
+          navigate(`/${data.id}/profile`, { replace: true })
+          onRequestClose(true)
+        } catch (error) {
+          console.log('something went wrong')
+        }
+      } else {
+        setFileError('Profile image is a required field')
+      }
     }
   }
 
   useEffect(() => {
-    showModal === false && reset()
-  }, [showModal])
+    show === false && reset()
+  }, [show])
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} encType='multipart/form-data'>
       <div className='flex flex-row'>
         <div className='flex basis-1/6 flex-col'>
           <div {...getRootProps({ className: 'w-[150px] h-[150px]' })}>
-            {files.length > 0 && (
+            {files.length > 0 ? (
               <img
                 alt='profile'
                 src={files[0].preview}
@@ -114,25 +136,37 @@ const BasicInfoModalContent = (props: Props) => {
                 }}
                 className='border-2 w-[150px] mt-3'
               />
+            ) : (
+              <>
+                {info && (
+                  <img
+                    alt='profile'
+                    src={`http://localhost:8000/${info.image}`}
+                    className='border-2 w-[150px] mt-3'
+                  />
+                )}
+              </>
             )}
             <input {...getInputProps()} />
             <p className='text-center h-1/2 text-sm p-2 border'>
               Drag drop company logo here, or click to select files
             </p>
+            <span className='text-xs mt-1 text-red-400'>{fileError}</span>
+            {fileRejections.map(
+              ({ errors }, idx) =>
+                errors && (
+                  <Fragment key={idx}>
+                    {errors.map((error) => (
+                      <span key={error.code} className='text-xs mt-1 text-red-400'>
+                        {error.code === 'file-too-large'
+                          ? 'File is larger than 2MB'
+                          : error.message}
+                      </span>
+                    ))}
+                  </Fragment>
+                ),
+            )}
           </div>
-          <span className='text-xs mt-1 text-red-400'>{fileError}</span>
-          {fileRejections.map(
-            ({ errors }) =>
-              errors && (
-                <>
-                  {errors.map((error) => (
-                    <span key={error.code} className='text-xs mt-1 text-red-400'>
-                      {error.code === 'file-too-large' ? 'File is larger than 2MB' : error.message}
-                    </span>
-                  ))}
-                </>
-              ),
-          )}
         </div>
         <div className='flex flex-col basis-5/6 ml-12'>
           <TextInput
@@ -156,6 +190,13 @@ const BasicInfoModalContent = (props: Props) => {
             type='date'
             className='border rounded w-full'
             error={errors.dob}
+          />
+          <TextInput
+            {...register('title')}
+            labelProps={{ className: 'text-sm' }}
+            label='Title'
+            className='border rounded w-full'
+            error={errors.title}
           />
         </div>
       </div>
