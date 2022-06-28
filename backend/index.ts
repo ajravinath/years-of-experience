@@ -2,6 +2,7 @@ import express from "express";
 import "dotenv/config";
 import cors from "cors";
 import profileRouter from "./routes/profileRouter";
+import errorHandler from "./middleware/errorHandler";
 
 const app = express();
 
@@ -20,6 +21,8 @@ app.get("/", (request, response) => {
     info: "Years of experience Node.js, Express, postgres Server",
   });
 });
+
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);

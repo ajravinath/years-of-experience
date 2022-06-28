@@ -1,49 +1,80 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import multer from "multer";
 import path from "path";
 import models from "../models";
 
 const Experience = models.experiences;
 
-const getExperience = async (req: Request, res: Response) => {
+const getExperience = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const id = req.params.id;
-  const experience = await Experience.findOne({
-    where: { profile_id: id },
-  });
-  res.status(200).send(experience);
+  try {
+    const experience = await Experience.findOne({
+      where: { profile_id: id },
+    });
+    res.status(200).send(experience);
+  } catch (error) {
+    next(error);
+  }
 };
-const getAllExperiences = async (req: Request, res: Response) => {
+const getAllExperiences = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const id = req.params.id;
-  const experiences = await Experience.findAll({
-    where: { profile_id: id },
-    order: [["startDate", "DESC"]],
-  });
-  res.status(200).send(experiences);
+  try {
+    const experiences = await Experience.findAll({
+      where: { profile_id: id },
+      order: [["startDate", "DESC"]],
+    });
+    res.status(200).send(experiences);
+  } catch (error) {
+    next(error);
+  }
 };
 
-const createExperience = async (req: Request, res: Response) => {
+const createExperience = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const id = req.params.id;
   const info = {
     ...JSON.parse(req.body.data),
     profile_id: id,
     image: req?.file?.path,
   };
-  const experience = await Experience.create(info);
-  res.status(200).send(experience);
-  console.log(experience);
+  try {
+    const experience = await Experience.create(info);
+    res.status(200).send(experience);
+  } catch (error) {
+    next(error);
+  }
 };
 
-const updateExperience = async (req: Request, res: Response) => {
+const updateExperience = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const experienceId = req.params.experienceId;
   const data = JSON.parse(req.body.data);
   if (req?.file?.path) {
     data.image = req?.file?.path;
   }
-  const result = await Experience.update(data, {
-    where: { id: experienceId },
-    returning: true,
-  });
-  res.status(200).send(result[1][0]);
+  try {
+    const result = await Experience.update(data, {
+      where: { id: experienceId },
+      returning: true,
+    });
+    res.status(200).send(result[1][0]);
+  } catch (error) {
+    next(error);
+  }
 };
 
 const storage = multer.diskStorage({

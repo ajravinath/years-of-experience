@@ -1,49 +1,61 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import multer from "multer";
 import path from "path";
 import models from "../models";
 
 const Profile = models.profiles;
 
-const getProfile = async (req: Request, res: Response) => {
+const getProfile = async (req: Request, res: Response, next: NextFunction) => {
   const id = req.params.id;
-  const profile = await Profile.findOne({ where: { id: id } });
-  res.status(200).send(profile);
+  try {
+    const profile = await Profile.findOne({ where: { id: id } });
+    res.status(200).send(profile);
+  } catch (error) {
+    next(error);
+  }
 };
 
-const getInfo = async (req: Request, res: Response) => {
+const getInfo = async (req: Request, res: Response, next: NextFunction) => {
   const id = req.params.id;
-  const profile = await Profile.findOne({
-    where: { id: id },
-    attributes: { exclude: ["experience"] },
-  });
-  res.status(200).send(profile);
+  try {
+    const profile = await Profile.findOne({
+      where: { id: id },
+      attributes: { exclude: ["experience"] },
+    });
+    res.status(200).send(profile);
+  } catch (error) {
+    next(error);
+  }
 };
 
-const createInfo = async (req: Request, res: Response) => {
-  console.log("body", req.body);
-  console.log("file: ", req.file);
+const createInfo = async (req: Request, res: Response, next: NextFunction) => {
   const info = {
     ...JSON.parse(req.body.data),
     image: req?.file?.path,
   };
-
-  const profile = await Profile.create(info, { returning: true });
-  res.status(200).send(profile);
-  console.log(profile);
+  try {
+    const profile = await Profile.create(info, { returning: true });
+    res.status(200).send(profile);
+  } catch (error) {
+    next(error);
+  }
 };
 
-const updateInfo = async (req: Request, res: Response) => {
+const updateInfo = async (req: Request, res: Response, next: NextFunction) => {
   const id = req.params.id;
   const data = JSON.parse(req.body.data);
   if (req?.file?.path) {
     data.image = req?.file?.path;
   }
-  const result = await Profile.update(data, {
-    where: { id: id },
-    returning: true,
-  });
-  res.status(200).send(result[1][0]);
+  try {
+    const result = await Profile.update(data, {
+      where: { id: id },
+      returning: true,
+    });
+    res.status(200).send(result[1][0]);
+  } catch (error) {
+    next(error);
+  }
 };
 
 const storage = multer.diskStorage({
