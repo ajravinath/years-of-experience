@@ -36,7 +36,7 @@ const BasicInfo = (props: Props) => {
 
   useEffect(() => {
     const fetchInfo = async (id_: number) => {
-      const { data } = await axios.get(`http://localhost:8000/api/profile/${id_}`)
+      const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}api/profile/${id_}`)
       setInfo(data)
     }
     if (type === 'edit' && id) {
@@ -48,7 +48,7 @@ const BasicInfo = (props: Props) => {
     setOpenModal(false)
     if (refetch && id) {
       const fetchInfo = async (id_: number) => {
-        const { data } = await axios.get(`http://localhost:8000/api/profile/${id_}`)
+        const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}api/profile/${id_}`)
         setInfo(data)
       }
       console.log('id: ', id)
@@ -63,7 +63,7 @@ const BasicInfo = (props: Props) => {
           <div className='mr-5'>
             <img
               alt='company logo'
-              src={`http://localhost:8000/${info.image}` || 'https://i.imgur.com/8Km9tLL.jpg'}
+              src={`${process.env.REACT_APP_BASE_URL}${info.image}` || 'https://i.imgur.com/8Km9tLL.jpg'}
               className='w-[80px] h-[80px]  rounded-full border-solid border-white border-2'
             />
           </div>

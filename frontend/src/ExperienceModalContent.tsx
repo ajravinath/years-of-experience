@@ -110,7 +110,7 @@ const ExperienceModalContent = (props: Props) => {
       }
       try {
         await axios.put(
-          `http://localhost:8000/api/profile/${id}/experience/${experience.id}`,
+          `${process.env.REACT_APP_BASE_URL}api/profile/${id}/experience/${experience.id}`,
           formData,
         )
         onRequestClose(true)
@@ -120,7 +120,7 @@ const ExperienceModalContent = (props: Props) => {
     } else {
       formData.append('image', imageFile?.file ?? null)
       try {
-        await axios.post(`http://localhost:8000/api/profile/${id}/experience`, formData)
+        await axios.post(`${process.env.REACT_APP_BASE_URL}api/profile/${id}/experience`, formData)
         onRequestClose(true)
       } catch (error) {
         console.log('something went wrong')
@@ -153,7 +153,7 @@ const ExperienceModalContent = (props: Props) => {
                 {experienceHasImage && (
                   <img
                     alt='profile'
-                    src={`http://localhost:8000/${experience?.image}`}
+                    src={`${process.env.REACT_APP_BASE_URL}${experience?.image}`}
                     className='border-2 w-[150px] mt-3'
                   />
                 )}

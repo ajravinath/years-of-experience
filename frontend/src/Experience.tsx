@@ -26,7 +26,9 @@ const Experience = () => {
 
   useEffect(() => {
     const fetchExperience = async (id_: number) => {
-      const { data } = await axios.get(`http://localhost:8000/api/profile/${id_}/experience`)
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}api/profile/${id_}/experience`,
+      )
       setExperience(data)
     }
     if (id) {
@@ -40,7 +42,9 @@ const Experience = () => {
       modalItem === 'add' ? setAddModal(false) : setEditModal(-1)
       if (refetch && id) {
         const fetchExperience = async (id_: number) => {
-          const { data } = await axios.get(`http://localhost:8000/api/profile/${id_}/experience`)
+          const { data } = await axios.get(
+            `${process.env.REACT_APP_BASE_URL}api/profile/${id_}/experience`,
+          )
           setExperience(data)
         }
         fetchExperience(parseInt(id, 10))
@@ -66,7 +70,7 @@ const Experience = () => {
                 alt='profile'
                 src={
                   xp.image
-                    ? `http://localhost:8000/${xp.image}`
+                    ? `${process.env.REACT_APP_BASE_URL}${xp.image}`
                     : 'https://seeklogo.com/images/G/glints-logo-C73B9B9D49-seeklogo.com.png'
                 }
                 className='border-solid border-white border-2 w-12 mt-3'

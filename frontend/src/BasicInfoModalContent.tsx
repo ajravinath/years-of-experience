@@ -96,7 +96,10 @@ const BasicInfoModalContent = (props: Props) => {
         setFileError('Profile image is a required field')
       }
       try {
-        const { data } = await axios.put(`http://localhost:8000/api/profile/${info.id}`, formData)
+        const { data } = await axios.put(
+          `${process.env.REACT_APP_BASE_URL}api/profile/${info.id}`,
+          formData,
+        )
         navigate(`/${data.id}/profile`, { replace: true })
         onRequestClose(true)
       } catch (error) {
@@ -106,7 +109,10 @@ const BasicInfoModalContent = (props: Props) => {
       if (imageFile?.file) {
         formData.append('image', imageFile.file)
         try {
-          const { data } = await axios.post('http://localhost:8000/api/profile', formData)
+          const { data } = await axios.post(
+            `${process.env.REACT_APP_BASE_URL}api/profile`,
+            formData,
+          )
           navigate(`/${data.id}/profile`, { replace: true })
           onRequestClose(true)
         } catch (error) {
@@ -141,7 +147,7 @@ const BasicInfoModalContent = (props: Props) => {
                 {info && (
                   <img
                     alt='profile'
-                    src={`http://localhost:8000/${info.image}`}
+                    src={`${process.env.REACT_APP_BASE_URL}${info.image}`}
                     className='border-2 w-[150px] mt-3'
                   />
                 )}
