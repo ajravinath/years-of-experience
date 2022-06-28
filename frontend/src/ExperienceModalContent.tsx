@@ -1,19 +1,25 @@
 import { yupResolver } from '@hookform/resolvers/yup'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { isDate } from 'date-fns'
-import { Fragment, useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState, useContext } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useForm } from 'react-hook-form'
 import { useParams } from 'react-router-dom'
 import * as yup from 'yup'
-import { ExperienceItem } from './Experience'
+import AppContext from './appContext'
+import { ExperienceItem, ExperienceItemOffline } from './Experience'
+import PostRequest from './PostRequest'
+import PutRequest from './PutRequest'
 import TextAreaInput from './TextAreaInput'
 import TextInput from './TextInput'
+import { v4 as uuid } from 'uuid'
+import { FileWithPreview } from './BasicInfoModalContent'
 
 type Props = {
   experience?: ExperienceItem
   show: boolean
   onRequestClose: (refetch?: boolean) => void
+  onChangeOffline: (experience: ExperienceItemOffline, file: FileWithPreview) => void
 }
 
 const validationSchema = yup.object().shape({
@@ -42,7 +48,7 @@ const validationSchema = yup.object().shape({
 })
 
 const ExperienceModalContent = (props: Props) => {
-  const { show, onRequestClose, experience } = props
+  const { show, onRequestClose, experience, onChangeOffline } = props
   const defaultValues = {
     title: experience?.title || '',
     company: experience?.company || '',
@@ -52,6 +58,7 @@ const ExperienceModalContent = (props: Props) => {
     description: experience?.description || '',
   }
 
+  const [files, setFiles] = useState<{ file: File; preview: string }[]>([])
   const {
     watch,
     register,
@@ -63,9 +70,10 @@ const ExperienceModalContent = (props: Props) => {
     defaultValues,
     resolver: yupResolver(validationSchema),
   })
-  const [files, setFiles] = useState<{ file: File; preview: string }[]>([])
-  const currentlyWorking = watch('currentlyWorking')
   const { id } = useParams()
+  const { addRequest } = useContext(AppContext)
+
+  const currentlyWorking = watch('currentlyWorking')
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(
@@ -88,6 +96,10 @@ const ExperienceModalContent = (props: Props) => {
     multiple: false,
   })
 
+  useEffect(() => {
+    show === false && reset()
+  }, [show])
+
   const onSubmit = async (data: typeof defaultValues) => {
     const imageFile = files?.[0]
 
@@ -101,36 +113,44 @@ const ExperienceModalContent = (props: Props) => {
     }
 
     const formData = new FormData()
-    formData.append('data', JSON.stringify(body))
-
     if (experience) {
+      formData.append('data', JSON.stringify(body))
       console.log('image file', imageFile)
       if (imageFile?.file) {
         formData.append('image', imageFile.file)
       }
+      const url = `${process.env.REACT_APP_BASE_URL}api/profile/${id}/experience/${experience.id}`
       try {
-        await axios.put(
-          `${process.env.REACT_APP_BASE_URL}api/profile/${id}/experience/${experience.id}`,
-          formData,
-        )
+        await axios.put(url, formData)
         onRequestClose(true)
-      } catch (error) {
-        console.log('something went wrong')
+      } catch (error: unknown) {
+        const error_ = error as AxiosError
+        if (error_.name === 'AxiosError' && error_.code === 'ERR_NETWORK') {
+          addRequest(new PutRequest(url, formData))
+          onChangeOffline({ ...experience, ...body }, imageFile)
+          onRequestClose(true)
+        }
+        console.log('something went wrong', error)
       }
     } else {
+      const newXP = Object.assign(body, { id: uuid() })
+      formData.append('data', JSON.stringify(newXP))
       formData.append('image', imageFile?.file ?? null)
+      const url = `${process.env.REACT_APP_BASE_URL}api/profile/${id}/experience`
       try {
-        await axios.post(`${process.env.REACT_APP_BASE_URL}api/profile/${id}/experience`, formData)
+        await axios.post(url, formData)
         onRequestClose(true)
-      } catch (error) {
-        console.log('something went wrong')
+      } catch (error: unknown) {
+        const error_ = error as AxiosError
+        if (error_.name === 'AxiosError' && error_.code === 'ERR_NETWORK') {
+          addRequest(new PostRequest(url, formData))
+          onChangeOffline(newXP, imageFile)
+          onRequestClose(true)
+        }
+        console.log('something went wrong', error)
       }
     }
   }
-
-  useEffect(() => {
-    show === false && reset()
-  }, [show])
 
   const experienceHasImage = Boolean(experience && experience.image)
 

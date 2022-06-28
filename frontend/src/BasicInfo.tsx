@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react'
-import { differenceInYears, parse } from 'date-fns'
-import Modal from './Modal'
-import BasicInfoModalContent from './BasicInfoModalContent'
-import { useParams } from 'react-router-dom'
 import axios from 'axios'
+import { differenceInYears, format, isDate, parse } from 'date-fns'
+import { useContext, useEffect, useState } from 'react'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
+import { useParams } from 'react-router-dom'
+import AppContext from './appContext'
+import BasicInfoModalContent, { FileWithPreview } from './BasicInfoModalContent'
+import Modal from './Modal'
 
-// type Props = {}
 export type Info = {
-  id: number
+  id: string
   firstName: string
   lastName: string
   title: string
@@ -17,13 +17,15 @@ export type Info = {
   image: string
 }
 
+export type OfflineInfo = Omit<Info, 'dob' | 'image'> & { dob: string | Date }
+
 type Props = {
   type: 'create' | 'edit'
 }
 
 const ageFromDob = (dob: string): number => {
-  const date = parse(dob, 'yyyy-MM-dd', new Date())
-  const age = differenceInYears(new Date(), date)
+  const date = parse(dob as string, 'yyyy-MM-dd', new Date())
+  const age = differenceInYears(new Date(), date as Date)
   return age
 }
 
@@ -31,29 +33,46 @@ const BasicInfo = (props: Props) => {
   const { type } = props
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [info, setInfo] = useState<Info>()
+  const [imageSrc, setImageSrc] = useState<string>('')
 
   const { id } = useParams()
+  const { refetch } = useContext(AppContext)
 
   useEffect(() => {
-    const fetchInfo = async (id_: number) => {
+    const fetchInfo = async (id_: string) => {
       const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}api/profile/${id_}`)
       setInfo(data)
+      setImageSrc(data.image ? `${process.env.REACT_APP_BASE_URL}${data.image}` : '')
     }
     if (type === 'edit' && id) {
-      fetchInfo(parseInt(id, 10))
+      fetchInfo(id)
     }
-  }, [id, type])
+  }, [id, type, refetch])
 
   const handleModalClose = (refetch = false) => {
     setOpenModal(false)
     if (refetch && id) {
-      const fetchInfo = async (id_: number) => {
+      const fetchInfo = async (id_: string) => {
         const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}api/profile/${id_}`)
         setInfo(data)
+        setImageSrc(data.image ? `${process.env.REACT_APP_BASE_URL}${data.image}` : '')
       }
       console.log('id: ', id)
-      fetchInfo(parseInt(id, 10))
+      fetchInfo(id)
     }
+  }
+
+  const handleSetInfoOffline = (editInfo: OfflineInfo, editFile: FileWithPreview) => {
+    if (editInfo.dob && isDate(editInfo.dob)) {
+      editInfo.dob = format(editInfo.dob as Date, 'yyyy-MM-dd')
+    }
+    const newInfo = { ...info, ...editInfo } as Info
+    if (editFile && editFile.preview) {
+      newInfo.image = editFile.preview
+    }
+    console.log('newInfo: ', newInfo)
+    setInfo(newInfo)
+    setImageSrc(newInfo.image)
   }
 
   return (
@@ -63,7 +82,7 @@ const BasicInfo = (props: Props) => {
           <div className='mr-5'>
             <img
               alt='company logo'
-              src={`${process.env.REACT_APP_BASE_URL}${info.image}` || 'https://i.imgur.com/8Km9tLL.jpg'}
+              src={imageSrc || 'https://i.imgur.com/8Km9tLL.jpg'}
               className='w-[80px] h-[80px]  rounded-full border-solid border-white border-2'
             />
           </div>
@@ -110,7 +129,12 @@ const BasicInfo = (props: Props) => {
         showModal={openModal}
         onRequestClose={handleModalClose}
         renderContent={(open, onRequestClose) => (
-          <BasicInfoModalContent show={open} onRequestClose={onRequestClose} info={info} />
+          <BasicInfoModalContent
+            show={open}
+            setInfoOffline={handleSetInfoOffline}
+            onRequestClose={onRequestClose}
+            info={info}
+          />
         )}
       />
     </div>

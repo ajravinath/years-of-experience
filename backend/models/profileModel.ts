@@ -2,6 +2,10 @@ import { Sequelize, DataTypes } from "sequelize";
 
 const Profile = (sequalize: Sequelize) =>
   sequalize.define("profile", {
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+    },
     firstName: {
       type: DataTypes.STRING,
       allowNull: false,

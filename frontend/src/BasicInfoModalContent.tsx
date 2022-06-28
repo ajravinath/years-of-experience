@@ -1,15 +1,27 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import { differenceInYears } from 'date-fns'
-import { Fragment, useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useContext, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
-import { Info } from './BasicInfo'
+import { Info, OfflineInfo } from './BasicInfo'
 import TextInput from './TextInput'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { useNavigate } from 'react-router-dom'
+import AppContext from './appContext'
+import PutRequest from './PutRequest'
+import PostRequest from './PostRequest'
+import { v4 as uuid } from 'uuid'
 
-type Props = { info?: Info; show: boolean; onRequestClose: (refetch?: boolean) => void }
+export type FileWithPreview = { file: File; preview: string }
+export type FormValues = { firstName: string; lastName: string; title: string; dob: string }
+
+type Props = {
+  info?: Info
+  show: boolean
+  onRequestClose: (refetch?: boolean) => void
+  setInfoOffline: (info: OfflineInfo, file: FileWithPreview) => void
+}
 
 const validationSchema = yup.object().shape({
   firstName: yup.string().trim().required('First name is a required field'),
@@ -30,9 +42,9 @@ const validationSchema = yup.object().shape({
 })
 
 const BasicInfoModalContent = (props: Props) => {
-  const { show, onRequestClose, info } = props
+  const { show, onRequestClose, setInfoOffline, info } = props
 
-  const defaultValues = {
+  const defaultValues: FormValues = {
     firstName: info?.firstName || '',
     lastName: info?.lastName || '',
     title: info?.title || '',
@@ -51,8 +63,9 @@ const BasicInfoModalContent = (props: Props) => {
   })
 
   const navigate = useNavigate()
+  const { addRequest } = useContext(AppContext)
 
-  const [files, setFiles] = useState<{ file: File; preview: string }[]>([])
+  const [files, setFiles] = useState<FileWithPreview[]>([])
   const [fileError, setFileError] = useState<string>('')
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -85,38 +98,52 @@ const BasicInfoModalContent = (props: Props) => {
       title: data.title,
       dob: data.dob,
     }
-    const formData = new FormData()
-    formData.append('data', JSON.stringify(body))
 
+    const formData = new FormData()
     if (info) {
+      formData.append('data', JSON.stringify(body))
       console.log('info.id: ', info.id)
       if (imageFile?.file) {
         formData.append('image', imageFile.file)
       } else if (!info.image) {
         setFileError('Profile image is a required field')
       }
+
+      const url = `${process.env.REACT_APP_BASE_URL}api/profile/${info.id}`
       try {
-        const { data } = await axios.put(
-          `${process.env.REACT_APP_BASE_URL}api/profile/${info.id}`,
-          formData,
-        )
+        const { data } = await axios.put(url, formData)
         navigate(`/${data.id}/profile`, { replace: true })
         onRequestClose(true)
-      } catch (error) {
-        console.log('something went wrong')
+      } catch (error: unknown) {
+        const error_ = error as AxiosError
+        if (error_.name === 'AxiosError' && error_.code === 'ERR_NETWORK') {
+          addRequest(new PutRequest(url, formData))
+          setInfoOffline({ ...info, ...data }, imageFile)
+          navigate(`/${info.id}/profile`, { replace: true })
+          onRequestClose(true)
+        }
+        console.log('something went wrong', error)
       }
     } else {
+      const newId = uuid()
+      formData.append('data', JSON.stringify(Object.assign(body, { id: newId })))
       if (imageFile?.file) {
         formData.append('image', imageFile.file)
+
+        const url = `${process.env.REACT_APP_BASE_URL}api/profile`
         try {
-          const { data } = await axios.post(
-            `${process.env.REACT_APP_BASE_URL}api/profile`,
-            formData,
-          )
+          const { data } = await axios.post(url, formData)
           navigate(`/${data.id}/profile`, { replace: true })
           onRequestClose(true)
-        } catch (error) {
-          console.log('something went wrong')
+        } catch (error: unknown) {
+          const error_ = error as AxiosError
+          if (error_.name === 'AxiosError' && error_.code === 'ERR_NETWORK') {
+            addRequest(new PostRequest(url, formData))
+            setInfoOffline({ ...data, id: newId }, imageFile)
+            navigate(`/${newId}/profile`, { replace: true })
+            onRequestClose(true)
+          }
+          console.log('something went wrong', error)
         }
       } else {
         setFileError('Profile image is a required field')

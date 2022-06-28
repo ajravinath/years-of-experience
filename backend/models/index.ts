@@ -40,13 +40,15 @@ profiles.hasMany(experiences, {
 
 experiences.belongsTo(profiles, { foreignKey: "profile_id", as: "profile" });
 
-(async () => {
-  try {
-    await sequelize.sync({ force: true });
-    console.log("tables re-synced");
-  } catch (error) {
-    console.log("unable to re-synced tables");
-  }
-})();
+if (isProduction) {
+  (async () => {
+    try {
+      await sequelize.sync({ force: true });
+      console.log("tables re-synced");
+    } catch (error) {
+      console.log("unable to re-synced tables");
+    }
+  })();
+}
 
 export default { profiles, experiences };

@@ -2,6 +2,10 @@ import { Sequelize, DataTypes } from "sequelize";
 
 const Experience = (sequalize: Sequelize) =>
   sequalize.define("experience", {
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+    },
     title: {
       type: DataTypes.STRING,
       allowNull: false,
