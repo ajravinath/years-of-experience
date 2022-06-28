@@ -4,9 +4,9 @@ import { useContext, useEffect, useState } from 'react'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { useParams } from 'react-router-dom'
-import AppContext from './appContext'
+import AppContext from '../context/appContext'
 import BasicInfoModalContent, { FileWithPreview } from './BasicInfoModalContent'
-import Modal from './Modal'
+import Modal from '../shared/Modal'
 
 export type Info = {
   id: string

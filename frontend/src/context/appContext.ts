@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import React from 'react'
-import GetRequest from './GetRequest'
-import PostRequest from './PostRequest'
-import PutRequest from './PutRequest'
+import GetRequest from '../models/GetRequest'
+import PostRequest from '../models/PostRequest'
+import PutRequest from '../models/PutRequest'
 
 export default React.createContext({
   refetch: 0,

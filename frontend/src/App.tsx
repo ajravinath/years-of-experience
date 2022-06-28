@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
-import BasicInfo from './BasicInfo'
-import Experience from './Experience'
+import BasicInfo from './info/BasicInfo'
+import Experience from './experience/Experience'
 
 function App() {
   return (

@@ -1,9 +1,9 @@
 import axios from 'axios'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import AppContext from './appContext'
-import GetRequest from './GetRequest'
-import PostRequest from './PostRequest'
-import PutRequest from './PutRequest'
+import GetRequest from '../models/GetRequest'
+import PostRequest from '../models/PostRequest'
+import PutRequest from '../models/PutRequest'
 
 type Props = { children: ReactNode }
 type RequestType = GetRequest | PutRequest | PostRequest
