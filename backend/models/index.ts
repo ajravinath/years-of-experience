@@ -3,18 +3,22 @@ import { Sequelize } from "sequelize";
 import Profile from "./profileModel";
 import Experience from "./experienceModel";
 
-const isProduction = process.env.NODE_ENV === "production";
+const isProduction = process.env.DB_ENV === "production";
+const options = isProduction
+  ? {
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false,
+        },
+      },
+    }
+  : {};
 
 const connectionString = `postgresql://${dbConfig.USER}:${dbConfig.PASSWORD}@${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`;
 const sequelize = new Sequelize(
   isProduction ? (process.env.DATABASE_URL as string) : connectionString,
-  {
-    dialectOptions: {
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    },
-  }
+  options
 );
 
 (async () => {
