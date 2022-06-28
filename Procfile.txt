@@ -1,3 +1,0 @@
-"script":{
- "start":"node backend/dist/index.js"
-}
