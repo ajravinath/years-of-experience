@@ -1,6 +1,6 @@
 # [years-of-experience](https://years-of-experience.netlify.app) 📈📅
 
-A simple web application for managing career profiles with offline capabilites.
+A simple web application for managing career profiles with offline capabilities.
 
 ## Frontend
 
