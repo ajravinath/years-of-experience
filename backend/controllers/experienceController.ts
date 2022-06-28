@@ -16,21 +16,18 @@ const getAllExperiences = async (req: Request, res: Response) => {
   const id = req.params.id;
   const experiences = await Experience.findAll({
     where: { profile_id: id },
+    order: [["startDate", "DESC"]],
   });
   res.status(200).send(experiences);
 };
 
 const createExperience = async (req: Request, res: Response) => {
+  const id = req.params.id;
   const info = {
-    title: req.body.title,
-    company: req.body.company,
-    currentlyWorking: req.body.currentlyWorking === "true",
-    startDate: req.body.startDate,
-    endDate: req.body.endDate,
+    ...JSON.parse(req.body.data),
+    profile_id: id,
     image: req?.file?.path,
-    description: req.body.description,
   };
-
   const experience = await Experience.create(info);
   res.status(200).send(experience);
   console.log(experience);
@@ -38,10 +35,15 @@ const createExperience = async (req: Request, res: Response) => {
 
 const updateExperience = async (req: Request, res: Response) => {
   const experienceId = req.params.experienceId;
-  const experience = await Experience.update(req.body, {
+  const data = JSON.parse(req.body.data);
+  if (req?.file?.path) {
+    data.image = req?.file?.path;
+  }
+  const result = await Experience.update(data, {
     where: { id: experienceId },
+    returning: true,
   });
-  res.status(200).send(experience);
+  res.status(200).send(result[1][0]);
 };
 
 const storage = multer.diskStorage({

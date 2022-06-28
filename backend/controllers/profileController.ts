@@ -24,22 +24,26 @@ const createInfo = async (req: Request, res: Response) => {
   console.log("body", req.body);
   console.log("file: ", req.file);
   const info = {
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
+    ...JSON.parse(req.body.data),
     image: req?.file?.path,
-    title: req.body.title,
-    dob: req.body.dob,
   };
 
-  const profile = await Profile.create(info);
+  const profile = await Profile.create(info, { returning: true });
   res.status(200).send(profile);
   console.log(profile);
 };
 
 const updateInfo = async (req: Request, res: Response) => {
   const id = req.params.id;
-  const profile = await Profile.update(req.body, { where: { id: id } });
-  res.status(200).send(profile);
+  const data = JSON.parse(req.body.data);
+  if (req?.file?.path) {
+    data.image = req?.file?.path;
+  }
+  const result = await Profile.update(data, {
+    where: { id: id },
+    returning: true,
+  });
+  res.status(200).send(result[1][0]);
 };
 
 const storage = multer.diskStorage({
