@@ -3,10 +3,19 @@ import { Sequelize } from "sequelize";
 import Profile from "./profileModel";
 import Experience from "./experienceModel";
 
-const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
-  host: dbConfig.HOST,
-  dialect: dbConfig.dialect,
-});
+const isProduction = process.env.NODE_ENV === "production";
+
+const connectionString = `postgresql://${dbConfig.USER}:${dbConfig.PASSWORD}@${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`;
+const sequelize = new Sequelize(
+  isProduction ? (process.env.DATABASE_URL as string) : connectionString,
+  {
+    dialectOptions: {
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    },
+  }
+);
 
 (async () => {
   try {
@@ -27,13 +36,13 @@ profiles.hasMany(experiences, {
 
 experiences.belongsTo(profiles, { foreignKey: "profile_id", as: "profile" });
 
-// (async () => {
-//   try {
-//     await sequelize.sync({ force: true });
-//     console.log("tables re-synced");
-//   } catch (error) {
-//     console.log("unable to re-synced tables");
-//   }
-// })();
+(async () => {
+  try {
+    await sequelize.sync({ force: true });
+    console.log("tables re-synced");
+  } catch (error) {
+    console.log("unable to re-synced tables");
+  }
+})();
 
 export default { profiles, experiences };
