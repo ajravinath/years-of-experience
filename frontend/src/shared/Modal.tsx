@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react'
+import { ReactElement } from 'react'
 import ReactModal from 'react-modal'
 
 type Props = {
@@ -11,12 +11,13 @@ type Props = {
   title: string
 }
 
-ReactModal.setAppElement('#root')
+if (process.env.NODE_ENV !== 'test') ReactModal.setAppElement('#root')
 
 const Modal = (props: Props) => {
   const { showModal, onRequestClose, renderContent, title } = props
   return (
     <ReactModal
+      appElement={document.querySelector('#root') as HTMLElement}
       className='modal-content z-10'
       overlayClassName='modal-overlay'
       shouldCloseOnEsc

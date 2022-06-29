@@ -136,7 +136,7 @@ const BasicInfo = (props: Props) => {
         </div>
       )}
       <Modal
-        title='Add Experience'
+        title={type === 'create' ? 'Create Profile' : 'Edit Profile'}
         showModal={openModal}
         onRequestClose={handleModalClose}
         renderContent={(open, onRequestClose) => (
