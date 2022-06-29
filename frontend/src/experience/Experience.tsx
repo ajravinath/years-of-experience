@@ -4,8 +4,8 @@ import { useContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import AppContext from '../context/appContext'
 import { FileWithPreview } from '../info/BasicInfoModalContent'
-import ExperienceModalContent from './ExperienceModalContent'
 import Modal from '../shared/Modal'
+import ExperienceModalContent from './ExperienceModalContent'
 
 export type ExperienceItem = {
   id: string

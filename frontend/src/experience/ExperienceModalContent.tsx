@@ -225,6 +225,7 @@ const ExperienceModalContent = (props: Props) => {
                 labelProps={{ className: 'text-sm' }}
                 label='Start Date'
                 id='start-date'
+                max={new Date().toISOString().split('T')[0]}
                 type='date'
                 className='border rounded w-full'
                 error={errors.startDate}
@@ -236,6 +237,7 @@ const ExperienceModalContent = (props: Props) => {
                 label='End Date'
                 labelProps={{ className: 'text-sm' }}
                 id='end-date'
+                max={new Date().toISOString().split('T')[0]}
                 type='date'
                 disabled={currentlyWorking}
                 className='border rounded w-full'

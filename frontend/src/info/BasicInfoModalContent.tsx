@@ -1,17 +1,17 @@
 import { yupResolver } from '@hookform/resolvers/yup'
+import axios, { AxiosError } from 'axios'
 import { differenceInYears } from 'date-fns'
 import { Fragment, useCallback, useContext, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useForm } from 'react-hook-form'
-import * as yup from 'yup'
-import { Info, OfflineInfo } from './BasicInfo'
-import TextInput from '../shared/TextInput'
-import axios, { AxiosError } from 'axios'
 import { useNavigate } from 'react-router-dom'
-import AppContext from '../context/appContext'
-import PutRequest from '../models/PutRequest'
-import PostRequest from '../models/PostRequest'
 import { v4 as uuid } from 'uuid'
+import * as yup from 'yup'
+import AppContext from '../context/appContext'
+import PostRequest from '../models/PostRequest'
+import PutRequest from '../models/PutRequest'
+import TextInput from '../shared/TextInput'
+import { Info, OfflineInfo } from './BasicInfo'
 
 export type FileWithPreview = { file: File; preview: string }
 export type FormValues = { firstName: string; lastName: string; title: string; dob: string }
@@ -221,6 +221,7 @@ const BasicInfoModalContent = (props: Props) => {
             labelProps={{ className: 'text-sm' }}
             label='Date of birth'
             type='date'
+            max={new Date().toISOString().split('T')[0]}
             className='border rounded w-full'
             error={errors.dob}
           />
