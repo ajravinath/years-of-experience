@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import multer from "multer";
 import path from "path";
+import { EmptyResultError } from "sequelize";
 import models from "../models";
 
 const Profile = models.profiles;
@@ -9,6 +10,9 @@ const getProfile = async (req: Request, res: Response, next: NextFunction) => {
   const id = req.params.id;
   try {
     const profile = await Profile.findOne({ where: { id: id } });
+    if (profile === null) {
+      throw new EmptyResultError(`profile with ${id} not found`);
+    }
     res.status(200).send(profile);
   } catch (error) {
     next(error);
@@ -22,8 +26,12 @@ const getInfo = async (req: Request, res: Response, next: NextFunction) => {
       where: { id: id },
       attributes: { exclude: ["experience"] },
     });
+    if (profile === null) {
+      throw new EmptyResultError(`profile with ${id} not found`);
+    }
     res.status(200).send(profile);
   } catch (error) {
+    console.log("Inside catch: ", error);
     next(error);
   }
 };
@@ -48,6 +56,10 @@ const updateInfo = async (req: Request, res: Response, next: NextFunction) => {
     data.image = req?.file?.path;
   }
   try {
+    const item = await Profile.findByPk(id);
+    if (item === null) {
+      throw new EmptyResultError(`profile with ${id} not found`);
+    }
     const result = await Profile.update(data, {
       where: { id: id },
       returning: true,

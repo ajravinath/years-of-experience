@@ -1,9 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import multer from "multer";
 import path from "path";
+import { EmptyResultError } from "sequelize";
 import models from "../models";
 
 const Experience = models.experiences;
+const Profile = models.profiles;
 
 const getExperience = async (
   req: Request,
@@ -15,6 +17,9 @@ const getExperience = async (
     const experience = await Experience.findOne({
       where: { profile_id: id },
     });
+    if (experience === null) {
+      throw new EmptyResultError(`profile with ${id} not found`);
+    }
     res.status(200).send(experience);
   } catch (error) {
     next(error);
@@ -27,6 +32,10 @@ const getAllExperiences = async (
 ) => {
   const id = req.params.id;
   try {
+    const profile = await Profile.findByPk(id);
+    if (profile === null) {
+      throw new EmptyResultError(`profile with ${id} not found`);
+    }
     const experiences = await Experience.findAll({
       where: { profile_id: id },
       order: [["startDate", "DESC"]],
@@ -67,6 +76,10 @@ const updateExperience = async (
     data.image = req?.file?.path;
   }
   try {
+    const profile = await Experience.findByPk(experienceId);
+    if (profile === null) {
+      throw new EmptyResultError(`experience with ${experienceId} not found`);
+    }
     const result = await Experience.update(data, {
       where: { id: experienceId },
       returning: true,

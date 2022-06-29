@@ -1,12 +1,13 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { differenceInYears, format, isDate, parse } from 'date-fns'
 import { useContext, useEffect, useState } from 'react'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import AppContext from '../context/appContext'
-import BasicInfoModalContent, { FileWithPreview } from './BasicInfoModalContent'
+import ApiError from '../models/ApiError'
 import Modal from '../shared/Modal'
+import BasicInfoModalContent, { FileWithPreview } from './BasicInfoModalContent'
 
 export type Info = {
   id: string
@@ -31,18 +32,28 @@ const ageFromDob = (dob: string): number => {
 
 const BasicInfo = (props: Props) => {
   const { type } = props
-  const [openModal, setOpenModal] = useState<boolean>(false)
+  const [openModal, setOpenModal] = useState<boolean>(() => type == 'create')
   const [info, setInfo] = useState<Info>()
   const [imageSrc, setImageSrc] = useState<string>('')
 
   const { id } = useParams()
   const { refetch } = useContext(AppContext)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchInfo = async (id_: string) => {
-      const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}api/profile/${id_}`)
-      setInfo(data)
-      setImageSrc(data.image ? `${process.env.REACT_APP_BASE_URL}${data.image}` : '')
+      try {
+        const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}api/profile/${id_}`)
+        setInfo(data)
+        setImageSrc(data.image ? `${process.env.REACT_APP_BASE_URL}${data.image}` : '')
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          const { response } = error as AxiosError<ApiError>
+          if (response && response.data.additional === 'not-found-error') {
+            navigate('/', { replace: true })
+          }
+        }
+      }
     }
     if (type === 'edit' && id) {
       fetchInfo(id)
