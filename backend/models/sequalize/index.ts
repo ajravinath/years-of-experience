@@ -1,4 +1,4 @@
-import dbConfig from "../config/dbConfig";
+import dbConfig from "../../config/dbConfig";
 import { Sequelize } from "sequelize";
 import Profile from "./profileModel";
 import Experience from "./experienceModel";
