@@ -2,7 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import multer from "multer";
 import path from "path";
 import { EmptyResultError } from "sequelize";
-import models from "../models";
+import models from "../models/sequalize";
+import ApiSuccessResponse from "../models/apiSuccessResponse";
 
 const Experience = models.experiences;
 const Profile = models.profiles;
@@ -20,7 +21,7 @@ const getExperience = async (
     if (experience === null) {
       throw new EmptyResultError(`profile with ${id} not found`);
     }
-    res.status(200).send(experience);
+    res.status(200).send(new ApiSuccessResponse(experience));
   } catch (error) {
     next(error);
   }
@@ -40,7 +41,7 @@ const getAllExperiences = async (
       where: { profile_id: id },
       order: [["startDate", "DESC"]],
     });
-    res.status(200).send(experiences);
+    res.status(200).send(new ApiSuccessResponse(experiences));
   } catch (error) {
     next(error);
   }
@@ -59,7 +60,7 @@ const createExperience = async (
   };
   try {
     const experience = await Experience.create(info);
-    res.status(200).send(experience);
+    res.status(200).send(new ApiSuccessResponse(experience));
   } catch (error) {
     next(error);
   }
@@ -84,7 +85,7 @@ const updateExperience = async (
       where: { id: experienceId },
       returning: true,
     });
-    res.status(200).send(result[1][0]);
+    res.status(200).send(new ApiSuccessResponse(result[1][0]));
   } catch (error) {
     next(error);
   }

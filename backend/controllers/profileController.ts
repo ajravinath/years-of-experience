@@ -2,7 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import multer from "multer";
 import path from "path";
 import { EmptyResultError } from "sequelize";
-import models from "../models";
+import models from "../models/sequalize";
+import ApiSuccessResponse from "../models/apiSuccessResponse";
 
 const Profile = models.profiles;
 
@@ -13,7 +14,7 @@ const getProfile = async (req: Request, res: Response, next: NextFunction) => {
     if (profile === null) {
       throw new EmptyResultError(`profile with ${id} not found`);
     }
-    res.status(200).send(profile);
+    res.status(200).send(new ApiSuccessResponse(profile));
   } catch (error) {
     next(error);
   }
@@ -29,7 +30,7 @@ const getInfo = async (req: Request, res: Response, next: NextFunction) => {
     if (profile === null) {
       throw new EmptyResultError(`profile with ${id} not found`);
     }
-    res.status(200).send(profile);
+    res.status(200).send(new ApiSuccessResponse(profile));
   } catch (error) {
     console.log("Inside catch: ", error);
     next(error);
@@ -43,7 +44,7 @@ const createInfo = async (req: Request, res: Response, next: NextFunction) => {
   };
   try {
     const profile = await Profile.create(info, { returning: true });
-    res.status(200).send(profile);
+    res.status(200).send(new ApiSuccessResponse(profile));
   } catch (error) {
     next(error);
   }
@@ -64,7 +65,7 @@ const updateInfo = async (req: Request, res: Response, next: NextFunction) => {
       where: { id: id },
       returning: true,
     });
-    res.status(200).send(result[1][0]);
+    res.status(200).send(new ApiSuccessResponse(result[1][0]));
   } catch (error) {
     next(error);
   }

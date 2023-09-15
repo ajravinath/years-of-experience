@@ -4,15 +4,8 @@ import {
   Error as SequalizeError,
   ValidationError,
 } from "sequelize";
+import { ApiError } from "../models/apiErrorResponse";
 
-class ApiError {
-  constructor(
-    public name: string,
-    public message: string,
-    public status = 400,
-    public additional = ""
-  ) {}
-}
 const errorHandler = (
   error: Error,
   request: Request,
@@ -36,7 +29,7 @@ const errorHandler = (
       apiError = new ApiError(
         error.name,
         error.message,
-        400,
+        404,
         "not-found-error"
       );
     }
