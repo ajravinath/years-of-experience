@@ -3,6 +3,7 @@ import "dotenv/config";
 import cors from "cors";
 import profileRouter from "./routes/profileRouter";
 import errorHandler from "./middleware/errorHandler";
+import userRouter from "./routes/userRouter";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const port = process.env.PORT;
 
+app.use("/api/user", userRouter);
 app.use("/api/profile", profileRouter);
 
 app.use("/Images", express.static("./Images"));

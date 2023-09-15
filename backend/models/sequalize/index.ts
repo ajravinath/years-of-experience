@@ -2,6 +2,7 @@ import dbConfig from "../../config/dbConfig";
 import { Sequelize } from "sequelize";
 import Profile from "./profileModel";
 import Experience from "./experienceModel";
+import User from "./userModel";
 
 const isProduction = process.env.DB_ENV === "production";
 const options = isProduction
@@ -30,15 +31,18 @@ const sequelize = new Sequelize(
   }
 })();
 
+const users = User(sequelize);
 const profiles = Profile(sequelize);
 const experiences = Experience(sequelize);
 
+users.hasOne(profiles, { foreignKey: "user_id", as: "profile" });
 profiles.hasMany(experiences, {
   foreignKey: "profile_id",
   as: "experience",
 });
 
 experiences.belongsTo(profiles, { foreignKey: "profile_id", as: "profile" });
+profiles.belongsTo(users, { foreignKey: "user_id", as: "user" });
 
 if (isProduction) {
   (async () => {
@@ -51,4 +55,4 @@ if (isProduction) {
   })();
 }
 
-export default { profiles, experiences };
+export default { profiles, experiences, users };

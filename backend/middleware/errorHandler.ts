@@ -4,7 +4,7 @@ import {
   Error as SequalizeError,
   ValidationError,
 } from "sequelize";
-import { ApiError } from "../models/apiErrorResponse";
+import { ApiError } from "models/apiErrorResponse";
 
 const errorHandler = (
   error: Error,
