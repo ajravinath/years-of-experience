@@ -1,12 +1,9 @@
-import axios from 'axios'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
-import AppContext from './appContext'
-import GetRequest from '../models/GetRequest'
-import PostRequest from '../models/PostRequest'
-import PutRequest from '../models/PutRequest'
+import AppContext, { RequestType } from './appContext'
+import { Api } from '../shared/api'
+import * as Rt from '../shared/api/models'
 
 type Props = { children: ReactNode }
-type RequestType = GetRequest | PutRequest | PostRequest
 const AppProvider = (props: Props) => {
   const { children } = props
   const [onLine, setOnline] = useState(navigator.onLine)
@@ -39,20 +36,41 @@ const AppProvider = (props: Props) => {
 
   useEffect(() => {
     const refetch = async () => {
-      Object.entries(requests.current).map(async ([key, request]: [string, RequestType]) => {
+      let profileId = null
+      let experienceId = null
+      for (const [key, request] of Object.entries(requests.current)) {
         console.log(key)
         if (onLine) {
-          if (request instanceof PostRequest) {
-            await axios.post(request.url, request.formData)
-            removeRequest(key)
+          let tempResponse = null
+          switch (request.type) {
+            case 'ProfilePost':
+              /** special case where created profile id is require to create associations */
+              tempResponse = await Api.post(request.getUrl(), (request as Rt.ProfilePost).formData)
+              profileId = tempResponse.data.data.id
+              break
+            case 'ProfilePut':
+              await Api.put(request.getUrl(), (request as Rt.ProfilePut).formData)
+              break
+            case 'ExperiencePost':
+              tempResponse = await Api.post(
+                (request as Rt.ExperiencePost).getUrl(profileId),
+                (request as Rt.ExperiencePost).formData,
+              )
+              experienceId = tempResponse.data.data.id
+              break
+            case 'ExperiencePut':
+              await Api.put(
+                request.getUrl(profileId, experienceId),
+                (request as Rt.ExperiencePut).formData,
+              )
+              break
+            default:
+              break
           }
-          if (request instanceof PutRequest) {
-            await axios.put(request.url, request.formData)
-            removeRequest(key)
-          }
+          removeRequest(key)
         }
         setRefetch((c) => ++c)
-      })
+      }
     }
     refetch()
   }, [onLine])
