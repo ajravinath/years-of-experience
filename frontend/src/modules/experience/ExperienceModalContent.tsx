@@ -1,19 +1,17 @@
 import { yupResolver } from '@hookform/resolvers/yup'
-import axios, { AxiosError } from 'axios'
 import { isDate } from 'date-fns'
 import { Fragment, useCallback, useEffect, useState, useContext } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useForm } from 'react-hook-form'
 import { useParams } from 'react-router-dom'
 import * as yup from 'yup'
-import AppContext from '../context/appContext'
-import { ExperienceItem, ExperienceItemOffline } from './Experience'
-import PostRequest from '../models/PostRequest'
-import PutRequest from '../models/PutRequest'
-import TextAreaInput from '../shared/TextAreaInput'
-import TextInput from '../shared/TextInput'
+import AppContext from '../../context/appContext'
+import { ExperienceItem, ExperienceItemOffline } from './ExperienceSection'
+import TextAreaInput from '../../shared/components/TextAreaInput'
+import TextInput from '../../shared/components/TextInput'
 import { v4 as uuid } from 'uuid'
 import { FileWithPreview } from '../info/BasicInfoModalContent'
+import { ExperienceApi, createExperience, editExperience } from '../../shared/api'
 
 type Props = {
   experience?: ExperienceItem
@@ -119,35 +117,35 @@ const ExperienceModalContent = (props: Props) => {
       if (imageFile?.file) {
         formData.append('image', imageFile.file)
       }
-      const url = `${process.env.REACT_APP_BASE_URL}api/profile/${id}/experience/${experience.id}`
-      try {
-        await axios.put(url, formData)
-        onRequestClose(true)
-      } catch (error: unknown) {
-        const error_ = error as AxiosError
-        if (error_.name === 'AxiosError' && error_.code === 'ERR_NETWORK') {
-          addRequest(new PutRequest(url, formData))
-          onChangeOffline({ ...experience, ...body }, imageFile)
+      if (id) {
+        const { isOk, error } = await editExperience(id, experience.id, formData)
+        if (isOk) {
           onRequestClose(true)
+        } else {
+          if (error === 'Network Error') {
+            addRequest(ExperienceApi.putRequest(id, experience.id, formData))
+            onChangeOffline({ ...experience, ...body }, imageFile)
+            onRequestClose(true)
+          }
+          console.error('something went wrong', error)
         }
-        console.log('something went wrong', error)
       }
     } else {
       const newXP = Object.assign(body, { id: uuid() })
       formData.append('data', JSON.stringify(newXP))
       formData.append('image', imageFile?.file ?? null)
-      const url = `${process.env.REACT_APP_BASE_URL}api/profile/${id}/experience`
-      try {
-        await axios.post(url, formData)
-        onRequestClose(true)
-      } catch (error: unknown) {
-        const error_ = error as AxiosError
-        if (error_.name === 'AxiosError' && error_.code === 'ERR_NETWORK') {
-          addRequest(new PostRequest(url, formData))
-          onChangeOffline(newXP, imageFile)
+      if (id) {
+        const { isOk, error } = await createExperience(id, formData)
+        if (isOk) {
           onRequestClose(true)
+        } else {
+          if (error === 'Network Error') {
+            addRequest(ExperienceApi.postRequest(id, formData))
+            onChangeOffline(newXP, imageFile)
+            onRequestClose(true)
+          }
+          console.error('something went wrong', error)
         }
-        console.log('something went wrong', error)
       }
     }
   }
@@ -214,10 +212,6 @@ const ExperienceModalContent = (props: Props) => {
             className='border rounded w-full'
             error={errors.company}
           />
-          <label className='mb-3' htmlFor='vehicle1'>
-            <input type='checkbox' id='current' {...register('currentlyWorking')} />
-            <span className='ml-2 text-sm'>Currently working here</span>
-          </label>
           <div className='flex flex-row justify-between text'>
             <div className='w-full mr-2'>
               <TextInput
@@ -245,6 +239,10 @@ const ExperienceModalContent = (props: Props) => {
               />
             </div>
           </div>
+          <label className='mb-3' htmlFor='vehicle1'>
+            <input type='checkbox' id='current' {...register('currentlyWorking')} />
+            <span className='ml-2 text-sm'>Currently working here</span>
+          </label>
           <TextAreaInput
             {...register('description', { required: true })}
             label='Description'

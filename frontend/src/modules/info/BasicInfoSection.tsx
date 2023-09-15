@@ -1,12 +1,11 @@
-import axios, { AxiosError } from 'axios'
 import { differenceInYears, format, isDate, parse } from 'date-fns'
 import { useContext, useEffect, useState } from 'react'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { useNavigate, useParams } from 'react-router-dom'
-import AppContext from '../context/appContext'
-import ApiError from '../models/ApiError'
-import Modal from '../shared/Modal'
+import AppContext from '../../context/appContext'
+import { getProfileById } from '../../shared/api'
+import Modal from '../../shared/components/Modal'
 import BasicInfoModalContent, { FileWithPreview } from './BasicInfoModalContent'
 
 export type Info = {
@@ -30,7 +29,7 @@ const ageFromDob = (dob: string): number => {
   return age
 }
 
-const BasicInfo = (props: Props) => {
+const BasicInfoSection = (props: Props) => {
   const { type } = props
   const [openModal, setOpenModal] = useState<boolean>(() => type == 'create')
   const [info, setInfo] = useState<Info>()
@@ -42,17 +41,12 @@ const BasicInfo = (props: Props) => {
 
   useEffect(() => {
     const fetchInfo = async (id_: string) => {
-      try {
-        const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}api/profile/${id_}`)
+      const { isOk, data, error } = await getProfileById(id_)
+      if (isOk) {
         setInfo(data)
         setImageSrc(data.image ? `${process.env.REACT_APP_BASE_URL}${data.image}` : '')
-      } catch (error) {
-        if (error instanceof AxiosError) {
-          const { response } = error as AxiosError<ApiError>
-          if (response && response.data.additional === 'not-found-error') {
-            navigate('/', { replace: true })
-          }
-        }
+      } else if (error === 'not-found-error') {
+        navigate('/', { replace: true })
       }
     }
     if (type === 'edit' && id) {
@@ -64,11 +58,12 @@ const BasicInfo = (props: Props) => {
     setOpenModal(false)
     if (refetch && id) {
       const fetchInfo = async (id_: string) => {
-        const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}api/profile/${id_}`)
-        setInfo(data)
-        setImageSrc(data.image ? `${process.env.REACT_APP_BASE_URL}${data.image}` : '')
+        const { isOk, data } = await getProfileById(id_)
+        if (isOk) {
+          setInfo(data)
+          setImageSrc(data.image ? `${process.env.REACT_APP_BASE_URL}${data.image}` : '')
+        }
       }
-      console.log('id: ', id)
       fetchInfo(id)
     }
   }
@@ -81,9 +76,8 @@ const BasicInfo = (props: Props) => {
     if (editFile && editFile.preview) {
       newInfo.image = editFile.preview
     }
-    console.log('newInfo: ', newInfo)
     setInfo(newInfo)
-    setImageSrc(newInfo.image)
+    setImageSrc(URL.createObjectURL(editFile.file))
   }
 
   return (
@@ -92,7 +86,7 @@ const BasicInfo = (props: Props) => {
         <div className='flex flex-row justify-left my-8 mx-4'>
           <div className='mr-5'>
             <img
-              alt='company logo'
+              alt='profile photo'
               src={imageSrc || 'https://i.imgur.com/8Km9tLL.jpg'}
               className='w-[80px] h-[80px]  rounded-full border-solid border-white border-2'
             />
@@ -152,4 +146,4 @@ const BasicInfo = (props: Props) => {
   )
 }
 
-export default BasicInfo
+export default BasicInfoSection

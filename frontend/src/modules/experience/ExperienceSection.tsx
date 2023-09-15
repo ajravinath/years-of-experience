@@ -1,11 +1,11 @@
-import axios from 'axios'
 import { format, isDate } from 'date-fns'
 import { useContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import AppContext from '../context/appContext'
+import AppContext from '../../context/appContext'
 import { FileWithPreview } from '../info/BasicInfoModalContent'
-import Modal from '../shared/Modal'
+import Modal from '../../shared/components/Modal'
 import ExperienceModalContent from './ExperienceModalContent'
+import { getAllExperiencesById } from '../../shared/api'
 
 export type ExperienceItem = {
   id: string
@@ -14,6 +14,7 @@ export type ExperienceItem = {
   currentlyWorking: boolean
   startDate: string
   image?: string
+  isOffline?: boolean
   endDate: string | null
   description: string
 }
@@ -25,7 +26,13 @@ export type ExperienceItemOffline = {
 
 type ExperienceData = { [key: string]: ExperienceItem }
 
-const Experience = () => {
+const normalizeExperiences = (experiences: ExperienceItem[]) => {
+  return experiences.reduce((accum: ExperienceData, curr: ExperienceItem) => {
+    return { ...accum, [curr.id]: curr }
+  }, {})
+}
+
+const ExperienceSection = () => {
   const [expand, setExpand] = useState<boolean>(false)
   const [editModal, setEditModal] = useState<number>(-1)
   const [addModal, setAddModal] = useState<boolean>(false)
@@ -37,14 +44,10 @@ const Experience = () => {
 
   useEffect(() => {
     const fetchExperience = async (id_: string) => {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}api/profile/${id_}/experience`,
-      )
-      setExperience(
-        data.reduce((accum: ExperienceData, curr: ExperienceItem) => {
-          return { ...accum, [curr.id]: curr }
-        }, {}),
-      )
+      const { isOk, data } = await getAllExperiencesById(id_)
+      if (isOk) {
+        setExperience(normalizeExperiences(data))
+      }
     }
     if (id) {
       fetchExperience(id)
@@ -57,18 +60,18 @@ const Experience = () => {
       modalItem === 'add' ? setAddModal(false) : setEditModal(-1)
       if (refetch && id) {
         const fetchExperience = async (id_: string) => {
-          const { data } = await axios.get(
-            `${process.env.REACT_APP_BASE_URL}api/profile/${id_}/experience`,
-          )
-          setExperience(data)
+          const { isOk, data } = await getAllExperiencesById(id_)
+          if (isOk) {
+            setExperience(normalizeExperiences(data))
+          }
         }
         fetchExperience(id)
       }
     }
 
   const handleExperienceOffline = (xp: ExperienceItemOffline, editFile: FileWithPreview) => {
-    if (editFile && editFile.preview) {
-      xp.image = editFile.preview
+    if (editFile && editFile.file) {
+      xp.image = URL.createObjectURL(editFile.file)
     }
     if (xp.startDate && isDate(xp.startDate)) {
       xp.startDate = format(xp.startDate as Date, 'yyyy-MM-dd')
@@ -76,6 +79,7 @@ const Experience = () => {
     if (xp.endDate && isDate(xp.endDate)) {
       xp.endDate = format(xp.endDate as Date, 'yyyy-MM-dd')
     }
+    xp.isOffline = true
     const newExperience = { ...experience, [xp.id]: xp } as ExperienceData
     setExperience(newExperience)
   }
@@ -84,6 +88,10 @@ const Experience = () => {
     (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
   )
 
+  const getImageSrc = ({ image, isOffline }: ExperienceItem) => {
+    if (!image) return 'https://seeklogo.com/images/G/glints-logo-C73B9B9D49-seeklogo.com.png'
+    return isOffline ? image : `${process.env.REACT_APP_BASE_URL}${image}`
+  }
   return (
     <div className='bg-white rounded-md p-4'>
       <div className='flex flex-row justify-between'>
@@ -101,11 +109,7 @@ const Experience = () => {
             <div className='mr-5'>
               <img
                 alt='profile'
-                src={
-                  xp.image
-                    ? `${process.env.REACT_APP_BASE_URL}${xp.image}`
-                    : 'https://seeklogo.com/images/G/glints-logo-C73B9B9D49-seeklogo.com.png'
-                }
+                src={getImageSrc(xp)}
                 className='border-solid border-white border-2 w-12 mt-3'
               />
             </div>
@@ -158,4 +162,4 @@ const Experience = () => {
   )
 }
 
-export default Experience
+export default ExperienceSection

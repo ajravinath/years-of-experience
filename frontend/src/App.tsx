@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
-import BasicInfo from './info/BasicInfo'
-import Experience from './experience/Experience'
+import BasicInfoSection from './modules/info/BasicInfoSection'
+import ExperienceSection from './modules/experience/ExperienceSection'
 
 function App() {
   return (
@@ -9,13 +9,13 @@ function App() {
         <div className='flex flex-col'>
           <Routes>
             <Route path='/'>
-              <Route index element={<BasicInfo type='create' />} />
+              <Route index element={<BasicInfoSection type='create' />} />
               <Route
                 path=':id/profile'
                 element={
                   <>
-                    <BasicInfo type='edit' />
-                    <Experience />
+                    <BasicInfoSection type='edit' />
+                    <ExperienceSection />
                   </>
                 }
               />
