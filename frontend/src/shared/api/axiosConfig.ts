@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios'
+import { onSignedOut } from 'shared/util/authUtil'
 
 export const Api = axios.create({
   withCredentials: false,
@@ -7,8 +8,15 @@ export const Api = axios.create({
 
 const errorHandler = (error: AxiosError) => {
   const status = error.response?.status
-  console.error('status', status, error)
-  return Promise.reject(error)
+  switch (status) {
+    case 401:
+      console.error('status', status, error)
+      onSignedOut()
+      return Promise.reject(error)
+    default:
+      console.error('status', status, error)
+      return Promise.reject(error)
+  }
 }
 
 Api.interceptors.response.use(

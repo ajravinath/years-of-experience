@@ -6,6 +6,7 @@ export {
   editExperience,
 } from './experience'
 export { ProfileApi, getProfileById, createProfile, editProfile } from './profile'
+export { AuthApi, login, signUp, refresh } from './auth'
 
 export type { Experience } from './experience'
 export type { Profile } from './profile'
