@@ -1,6 +1,6 @@
 import { Router } from "express";
-import experienceController from "controllers/experienceController";
-import authenticate from "middleware/authenticator";
+import experienceController from "../controllers/experienceController";
+import authenticate from "../middleware/authenticator";
 
 const experienceRouter = Router({
   mergeParams: true,

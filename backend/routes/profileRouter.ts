@@ -1,8 +1,7 @@
 import { Router } from "express";
-import profileController from "controllers/profileController";
 import experienceRouter from "./experienceRouter";
-import authenticate from "middleware/authenticator";
-
+import authenticate from "../middleware/authenticator";
+import profileController from "../controllers/profileController";
 const profileRouter = Router();
 
 profileRouter.use("/:id/experience", authenticate, experienceRouter);

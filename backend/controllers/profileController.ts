@@ -1,9 +1,9 @@
 import { NextFunction, Response, Request } from "express";
 import multer from "multer";
 import path from "path";
-import EmptyResultError from "sequelize/types/errors/empty-result-error";
-import models from "models/sequalize";
-import ApiSuccessResponse from "models/apiSuccessResponse";
+import models from "../models/sequalize";
+import ApiSuccessResponse from "../models/apiSuccessResponse";
+import { EmptyResultError } from "sequelize";
 
 const Profile = models.profiles;
 
@@ -38,9 +38,14 @@ const getInfo = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const createInfo = async (req: Request, res: Response, next: NextFunction) => {
+  const user = req.user;
+  if (!user) {
+    throw new Error("token invalid");
+  }
   const info = {
     ...JSON.parse(req.body.data),
     image: req?.file?.path,
+    user_id: user.id,
   };
   try {
     const profile = await Profile.create(info, { returning: true });

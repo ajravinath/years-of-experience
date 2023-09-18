@@ -4,7 +4,7 @@ import {
   Error as SequalizeError,
   ValidationError,
 } from "sequelize";
-import { ApiError } from "models/apiErrorResponse";
+import { ApiError } from "../models/apiErrorResponse";
 
 const errorHandler = (
   error: Error,
@@ -13,8 +13,7 @@ const errorHandler = (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction
 ) => {
-  console.log("Inside error handler");
-  let apiError = new ApiError(error.name, error.message, 400);
+  let apiError = new ApiError(error.name, error.message, 400, error.message);
   if (error instanceof SequalizeError) {
     console.log("sequalize error");
     if (error instanceof ValidationError) {

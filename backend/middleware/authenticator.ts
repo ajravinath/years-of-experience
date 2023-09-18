@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { ApiError } from "models/apiErrorResponse";
+import { ApiError } from "../models/apiErrorResponse";
 
 const authenticate = (
   request: Request,
   response: Response,
   next: NextFunction
 ) => {
-  const accessToken = request.headers["authorization"] as string;
+  const accessToken = request.cookies["accessToken"] as string;
   let apiError = new ApiError(
     "unauthenticated",
     "You are not authenticated!",
@@ -23,8 +23,6 @@ const authenticate = (
       process.env.JWT_SECRET as string
     ) as JwtPayload;
     request.user = decoded.user;
-    next();
-
     next();
   } catch (error) {
     apiError = new ApiError(

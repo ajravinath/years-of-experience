@@ -1,9 +1,9 @@
+import { EmptyResultError } from "sequelize";
 import { NextFunction, Request, Response } from "express";
 import multer from "multer";
 import path from "path";
-import EmptyResultError from "sequelize/types/errors/empty-result-error";
-import models from "models/sequalize";
-import ApiSuccessResponse from "models/apiSuccessResponse";
+import models from "../models/sequalize";
+import ApiSuccessResponse from "../models/apiSuccessResponse";
 
 const Experience = models.experiences;
 const Profile = models.profiles;

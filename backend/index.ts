@@ -4,12 +4,18 @@ import cors from "cors";
 import profileRouter from "./routes/profileRouter";
 import errorHandler from "./middleware/errorHandler";
 import userRouter from "./routes/userRouter";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+const whitelist = [
+  "http://localhost:3000",
+  "https://years-of-experience.netlify.app/",
+];
+app.use(cors({ credentials: true, origin: whitelist }));
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 const port = process.env.PORT;
 
