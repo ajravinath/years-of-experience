@@ -6,6 +6,7 @@ import { FileWithPreview } from '../info/BasicInfoModalContent'
 import Modal from '../../shared/components/Modal'
 import ExperienceModalContent from './ExperienceModalContent'
 import { getAllExperiencesById } from '../../shared/api'
+import useAuth from 'shared/hooks/useAuth'
 
 export type ExperienceItem = {
   id: string
@@ -36,10 +37,12 @@ const ExperienceSection = () => {
   const [expand, setExpand] = useState<boolean>(false)
   const [editModal, setEditModal] = useState<number>(-1)
   const [addModal, setAddModal] = useState<boolean>(false)
+  const { id } = useParams()
 
   const [experience, setExperience] = useState<ExperienceData>({})
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, isMyProfile] = useAuth(id)
 
-  const { id } = useParams()
   const { refetch } = useContext(AppContext)
 
   useEffect(() => {
@@ -89,19 +92,22 @@ const ExperienceSection = () => {
   )
 
   const getImageSrc = ({ image, isOffline }: ExperienceItem) => {
-    if (!image) return 'https://seeklogo.com/images/G/glints-logo-C73B9B9D49-seeklogo.com.png'
+    if (!image)
+      return 'https://53.fs1.hubspotusercontent-na1.net/hub/53/hubfs/image8-2.jpg?width=1190&height=800&name=image8-2.jpg'
     return isOffline ? image : `${process.env.REACT_APP_BASE_URL}${image}`
   }
   return (
     <div className='bg-white rounded-md p-4'>
       <div className='flex flex-row justify-between'>
         <p className='mx-4 mt-4 text-3xl font-bold'>Experience</p>
-        <button
-          className='mx-4 mt-4 border p-2 hover:bg-blue-800 hover:text-white hover:border-blue-900 font-semibold rounded-sm'
-          onClick={() => setAddModal(true)}
-        >
-          Add Experience
-        </button>
+        {isMyProfile && (
+          <button
+            className='mx-4 mt-4 border p-2 hover:bg-blue-800 hover:text-white hover:border-blue-900 font-semibold rounded-sm'
+            onClick={() => setAddModal(true)}
+          >
+            Add Experience
+          </button>
+        )}
       </div>
       {experiencesList.map((xp, index, array) => (
         <div key={index}>
@@ -122,12 +128,14 @@ const ExperienceSection = () => {
               <p className={`text-md ${expand ? '' : 'line-clamp-3'}`}>{xp.description}</p>
             </div>
             <div className='basis-1/12 text-end my-auto'>
-              <button
-                className='border px-5 py-1 hover:bg-blue-800 text-sm font-semibold hover:text-white hover:border-blue-900 rounded-sm'
-                onClick={() => setEditModal(index)}
-              >
-                Edit
-              </button>
+              {isMyProfile && (
+                <button
+                  className='border px-5 py-1 hover:bg-blue-800 text-sm font-semibold hover:text-white hover:border-blue-900 rounded-sm'
+                  onClick={() => setEditModal(index)}
+                >
+                  Edit
+                </button>
+              )}
             </div>
             <Modal
               title='Edit Experience'

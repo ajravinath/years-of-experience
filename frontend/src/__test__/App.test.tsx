@@ -1,4 +1,4 @@
-import App from '../App'
+import App from 'App'
 import { renderInRouter } from './utils'
 
 test('renders learn react link', () => {

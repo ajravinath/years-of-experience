@@ -1,3 +1,4 @@
+import { Header } from './shared/components/Header'
 import { Route, Routes } from 'react-router-dom'
 import BasicInfoSection from './modules/info/BasicInfoSection'
 import ExperienceSection from './modules/experience/ExperienceSection'
@@ -5,6 +6,7 @@ import ExperienceSection from './modules/experience/ExperienceSection'
 function App() {
   return (
     <div>
+      <Header />
       <div className='container mx-auto mt-10'>
         <div className='flex flex-col'>
           <Routes>

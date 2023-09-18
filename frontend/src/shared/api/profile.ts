@@ -10,13 +10,14 @@ import { ProfileGet } from './models/ProfileGet'
 import { ProfilePost } from './models/ProfilePost'
 import { ProfilePut } from './models/ProfilePut'
 
-interface ProfileDTO {
+export interface ProfileDTO {
   id: string
   firstName: string
   lastName: string
   title: string
   image: string
   dob: string
+  user_id: string
 }
 
 export interface Profile {
@@ -26,6 +27,7 @@ export interface Profile {
   title: string
   image: string
   dob: string
+  user_id: string
 }
 
 export const ProfileApi = {
@@ -45,7 +47,9 @@ export const getProfileById = async (
 ): Promise<ApiSuccessResponse<Profile> | ApiErrorResponse> => {
   try {
     const request = ProfileApi.getRequest(id)
-    const { data } = await Api.get<ApiSuccessResponseDTO<ProfileDTO>>(request.getUrl())
+    const { data } = await Api.get<ApiSuccessResponseDTO<ProfileDTO>>(request.getUrl(), {
+      withCredentials: true,
+    })
     return { isOk: true, data: data.data, error: null }
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -59,14 +63,17 @@ export const getProfileById = async (
 }
 
 export const createProfile = async (
-  formData: FormData,
+  rest: string,
+  file: File,
 ): Promise<ApiSuccessResponse<Profile> | ApiErrorResponse> => {
   try {
+    const formData = new FormData()
+    formData.append('data', rest)
+    formData.append('image', file)
     const request = ProfileApi.postRequest(formData)
-    const { data } = await Api.post<ApiSuccessResponseDTO<ProfileDTO>>(
-      request.getUrl(),
-      request.formData,
-    )
+    const { data } = await Api.post<ApiSuccessResponseDTO<ProfileDTO>>(request.getUrl(), formData, {
+      withCredentials: true,
+    })
     return { isOk: true, data: data.data, error: null }
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -88,6 +95,7 @@ export const editProfile = async (
     const { data } = await Api.put<ApiSuccessResponseDTO<ProfileDTO>>(
       request.getUrl(),
       request.formData,
+      { withCredentials: true },
     )
     return { isOk: true, data: data.data, error: null }
   } catch (error) {

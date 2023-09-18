@@ -97,8 +97,8 @@ const BasicInfoModalContent = (props: Props) => {
       dob: data.dob,
     }
 
-    const formData = new FormData()
     if (info) {
+      const formData = new FormData()
       formData.append('data', JSON.stringify(body))
       console.log('info.id: ', info.id)
       if (imageFile?.file) {
@@ -123,12 +123,16 @@ const BasicInfoModalContent = (props: Props) => {
         console.error('something went wrong', error)
       }
     } else {
+      const formData = new FormData()
       const newId = uuid()
       formData.append('data', JSON.stringify(Object.assign(body, { id: newId })))
       if (imageFile?.file) {
         formData.append('image', imageFile.file)
 
-        const { data, isOk, error } = await createProfile(formData)
+        const { data, isOk, error } = await createProfile(
+          JSON.stringify(Object.assign(body, { id: newId })),
+          imageFile.file,
+        )
         if (isOk) {
           navigate(`/${data.id}/profile`, { replace: true })
           onRequestClose(true)

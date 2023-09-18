@@ -49,7 +49,9 @@ export const getAllExperiencesById = async (
 ): Promise<ApiSuccessResponse<Experience[]> | ApiErrorResponse> => {
   try {
     const request = ExperienceApi.getRequest(id)
-    const { data } = await Api.get<ApiSuccessResponseDTO<ExperienceDTO[]>>(request.getUrl())
+    const { data } = await Api.get<ApiSuccessResponseDTO<ExperienceDTO[]>>(request.getUrl(), {
+      withCredentials: true,
+    })
     return { isOk: true, data: data.data, error: null }
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -71,6 +73,7 @@ export const createExperience = async (
     const { data } = await Api.post<ApiSuccessResponseDTO<ExperienceDTO>>(
       request.getUrl(),
       request.formData,
+      { withCredentials: true },
     )
     return { isOk: true, data: data.data, error: null }
   } catch (error) {
@@ -94,6 +97,7 @@ export const editExperience = async (
     const { data } = await Api.post<ApiSuccessResponseDTO<ExperienceDTO>>(
       request.getUrl(),
       formData,
+      { withCredentials: true },
     )
     return { isOk: true, data: data.data, error: null }
   } catch (error) {

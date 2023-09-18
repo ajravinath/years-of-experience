@@ -7,6 +7,9 @@ import AppContext from '../../context/appContext'
 import { getProfileById } from '../../shared/api'
 import Modal from '../../shared/components/Modal'
 import BasicInfoModalContent, { FileWithPreview } from './BasicInfoModalContent'
+import LoginSignUpModalContent from '../auth/LoginSignUpModalContent'
+import useAuth from '../../shared/hooks/useAuth'
+import authContext from 'context/authContext'
 
 export type Info = {
   id: string
@@ -15,6 +18,7 @@ export type Info = {
   title: string
   dob: string
   image: string
+  user_id?: string
 }
 
 export type OfflineInfo = Omit<Info, 'dob' | 'image'> & { dob: string | Date }
@@ -31,13 +35,34 @@ const ageFromDob = (dob: string): number => {
 
 const BasicInfoSection = (props: Props) => {
   const { type } = props
-  const [openModal, setOpenModal] = useState<boolean>(() => type == 'create')
+  const { id } = useParams()
+  const { setAuthModalOpen, authModalOpen, user } = useContext(authContext)
+  const [authModalType, setAuthModalType] = useState<'login' | 'signup'>('login')
+  const [openInfoModal, setOpenInfoModal] = useState<boolean>(() => type === 'create')
+
   const [info, setInfo] = useState<Info>()
   const [imageSrc, setImageSrc] = useState<string>('')
 
-  const { id } = useParams()
+  const [isAuthenticated, isMyProfile] = useAuth(id)
   const { refetch } = useContext(AppContext)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (type === 'create' && !isAuthenticated) {
+      setAuthModalOpen(true)
+    }
+  }, [type, isAuthenticated])
+
+  useEffect(() => {
+    setOpenInfoModal(type === 'create')
+  }, [type])
+
+  useEffect(() => {
+    const redirectToMyProfile = (profId: string) => {
+      navigate(`/${profId}/profile`, { replace: true })
+    }
+    if (type === 'create' && isAuthenticated && user.profileId) redirectToMyProfile(user.profileId)
+  }, [user.profileId, type, isAuthenticated])
 
   useEffect(() => {
     const fetchInfo = async (id_: string) => {
@@ -55,7 +80,7 @@ const BasicInfoSection = (props: Props) => {
   }, [id, type, refetch])
 
   const handleModalClose = (refetch = false) => {
-    setOpenModal(false)
+    setOpenInfoModal(false)
     if (refetch && id) {
       const fetchInfo = async (id_: string) => {
         const { isOk, data } = await getProfileById(id_)
@@ -80,6 +105,8 @@ const BasicInfoSection = (props: Props) => {
     setImageSrc(URL.createObjectURL(editFile.file))
   }
 
+  const handleCloseLoginModal = () => setAuthModalOpen(false)
+
   return (
     <div className='bg-white rounded-md p-4 mb-5'>
       {info ? (
@@ -99,12 +126,15 @@ const BasicInfoSection = (props: Props) => {
                   {info.dob ? `(${ageFromDob(info.dob)})` : <Skeleton />}
                 </span>
               </p>
-              <button
-                className='border p-2 hover:bg-blue-800 hover:text-white hover:border-blue-900 font-semibold rounded-sm'
-                onClick={() => setOpenModal(true)}
-              >
-                {type === 'create' ? 'Create profile' : 'Edit profile'}
-              </button>
+              <p>{`isMyProfile: ${isMyProfile}`}</p>
+              {((type === 'edit' && isMyProfile) || (type === 'create' && !isAuthenticated)) && (
+                <button
+                  className='border p-2 hover:bg-blue-800 hover:text-white hover:border-blue-900 font-semibold rounded-sm'
+                  onClick={() => setOpenInfoModal(true)}
+                >
+                  {type === 'create' ? 'Create profile' : 'Edit profile'}
+                </button>
+              )}
             </div>
             <p className='text-2xl'>{info.title}</p>
           </div>
@@ -121,7 +151,7 @@ const BasicInfoSection = (props: Props) => {
             <div className='grow basis-2/12 text-right ml-4 my-auto'>
               <button
                 className='border p-2 hover:bg-blue-800 hover:text-white hover:border-blue-900 font-semibold rounded-sm'
-                onClick={() => setOpenModal(true)}
+                onClick={() => setOpenInfoModal(true)}
               >
                 Create profile
               </button>
@@ -130,18 +160,36 @@ const BasicInfoSection = (props: Props) => {
         </div>
       )}
       <Modal
-        title={type === 'create' ? 'Create Profile' : 'Edit Profile'}
-        showModal={openModal}
-        onRequestClose={handleModalClose}
+        title={authModalType === 'login' ? 'Login' : 'Sign Up'}
+        showModal={authModalOpen}
+        shouldCloseOnEsc={false}
+        shouldCloseOnOverlayClick={false}
+        hideCloseBtn={true}
+        onRequestClose={handleCloseLoginModal}
         renderContent={(open, onRequestClose) => (
-          <BasicInfoModalContent
+          <LoginSignUpModalContent
             show={open}
-            setInfoOffline={handleSetInfoOffline}
+            type={authModalType}
+            onSwitchType={setAuthModalType}
             onRequestClose={onRequestClose}
-            info={info}
           />
         )}
       />
+      {!authModalOpen && (
+        <Modal
+          title={type === 'create' ? 'Create Profile' : 'Edit Profile'}
+          showModal={openInfoModal}
+          onRequestClose={handleModalClose}
+          renderContent={(open, onRequestClose) => (
+            <BasicInfoModalContent
+              show={open}
+              setInfoOffline={handleSetInfoOffline}
+              onRequestClose={onRequestClose}
+              info={info}
+            />
+          )}
+        />
+      )}
     </div>
   )
 }
