@@ -1,8 +1,9 @@
 import axios, { AxiosError } from 'axios'
 import { onSignedOut } from 'shared/util/authUtil'
 
+axios.defaults.withCredentials = true
 export const Api = axios.create({
-  withCredentials: false,
+  withCredentials: true,
   baseURL: `${process.env.REACT_APP_BASE_URL}api/`,
 })
 

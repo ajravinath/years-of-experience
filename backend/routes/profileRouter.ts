@@ -4,7 +4,7 @@ import authenticate from "../middleware/authenticator";
 import profileController from "../controllers/profileController";
 const profileRouter = Router();
 
-profileRouter.use("/:id/experience", authenticate, experienceRouter);
+profileRouter.use("/:id/experience", experienceRouter);
 
 profileRouter.get("/:id/all", profileController.getProfile);
 profileRouter.get("/:id", profileController.getInfo);

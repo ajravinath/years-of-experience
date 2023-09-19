@@ -53,7 +53,6 @@ export const login = async (
       request.getUrl(),
       { data: request.formData },
       {
-        withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -80,7 +79,6 @@ export const signUp = async (
       request.getUrl(),
       { data: request.formData },
       {
-        withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
         },

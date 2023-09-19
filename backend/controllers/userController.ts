@@ -12,10 +12,10 @@ const EXPIRES_IN_REFRESH = "1d";
 const secret = process.env.JWT_SECRET as string;
 
 const cookieOptions: CookieOptions = {
-  sameSite: "none",
-  path: "/",
-  secure: true,
   httpOnly: true,
+  sameSite: "none",
+  secure: true,
+  maxAge: 24 * 60 * 60 * 1000,
 };
 
 const refresh = async (req: Request, res: Response, next: NextFunction) => {
@@ -78,10 +78,9 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 const login = async (req: Request, res: Response, next: NextFunction) => {
-  if (req.method === "OPTIONS") {
-    return res.status(200).json({ body: "OK" });
-  }
   try {
     const { email, password } = req.body.data;
     if (!email || !password) {
