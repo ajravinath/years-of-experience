@@ -44,7 +44,8 @@ profiles.hasMany(experiences, {
 experiences.belongsTo(profiles, { foreignKey: "profile_id", as: "profile" });
 profiles.belongsTo(users, { foreignKey: "user_id", as: "user" });
 
-if (isProduction) {
+const resyncDb = isProduction && process.env.RESYNC_DB === "true";
+if (resyncDb) {
   (async () => {
     try {
       await sequelize.sync({ force: true });
