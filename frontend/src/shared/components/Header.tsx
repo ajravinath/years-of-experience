@@ -19,6 +19,8 @@ export const Header = () => {
       <div className='flex justify-end mx-3 ml-auto h-fit my-auto'>
         {isAuthenticated ? (
           <button
+            title='Sign out'
+            aria-label='Sign out'
             onClick={() => onSignedOut()}
             className='p-1 border rounded-full border-green-800 text-green-800 hover:text-white hover:border-white'
           >
@@ -40,7 +42,7 @@ export const Header = () => {
         ) : (
           <button
             onClick={() => setAuthModalOpen(true)}
-            className='p-1 border rounded-full border-green-800 text-green-800 hover:text-white hover:border-white'
+            className='p-1 border rounded-lg px-2 border-green-800 text-green-800 hover:text-white hover:border-white'
           >
             Login
           </button>

@@ -10,9 +10,25 @@ const app = express();
 
 const whitelist = [
   "http://localhost:3000",
-  "https://years-of-experience.netlify.app/",
+  "https://years-of-experience.netlify.app",
+  "https://project-anuja.xyz",
+  "https://www.project-anuja.xyz",
 ];
-app.use(cors({ credentials: true, origin: whitelist }));
+
+/** dynamic whitelisting can be extended */
+app.use(
+  cors({
+    credentials: true,
+    origin: (origin, callback) => {
+      if (origin && whitelist.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error());
+      }
+    },
+  })
+);
+
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

@@ -126,7 +126,6 @@ const BasicInfoSection = (props: Props) => {
                   {info.dob ? `(${ageFromDob(info.dob)})` : <Skeleton />}
                 </span>
               </p>
-              <p>{`isMyProfile: ${isMyProfile}`}</p>
               {((type === 'edit' && isMyProfile) || (type === 'create' && !isAuthenticated)) && (
                 <button
                   className='border p-2 hover:bg-blue-800 hover:text-white hover:border-blue-900 font-semibold rounded-sm'
