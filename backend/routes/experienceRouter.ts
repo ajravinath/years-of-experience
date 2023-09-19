@@ -6,7 +6,7 @@ const experienceRouter = Router({
   mergeParams: true,
 });
 
-experienceRouter.get("/", authenticate, experienceController.getAllExperiences);
+experienceRouter.get("/", experienceController.getAllExperiences);
 experienceRouter.post(
   "/",
   authenticate,

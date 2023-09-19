@@ -6,8 +6,8 @@ const profileRouter = Router();
 
 profileRouter.use("/:id/experience", authenticate, experienceRouter);
 
-profileRouter.get("/:id/all", authenticate, profileController.getProfile);
-profileRouter.get("/:id", authenticate, profileController.getInfo);
+profileRouter.get("/:id/all", profileController.getProfile);
+profileRouter.get("/:id", profileController.getInfo);
 profileRouter.post(
   "/",
   authenticate,
