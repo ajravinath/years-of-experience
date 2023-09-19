@@ -79,6 +79,9 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.method === "OPTIONS") {
+    return res.status(200).json({ body: "OK" });
+  }
   try {
     const { email, password } = req.body.data;
     if (!email || !password) {
