@@ -113,7 +113,6 @@ const ExperienceModalContent = (props: Props) => {
     const formData = new FormData()
     if (experience) {
       formData.append('data', JSON.stringify(body))
-      console.log('image file', imageFile)
       if (imageFile?.file) {
         formData.append('image', imageFile.file)
       }
