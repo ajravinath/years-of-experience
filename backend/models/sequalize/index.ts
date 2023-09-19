@@ -17,10 +17,10 @@ const options = isProduction
   : {};
 
 const connectionString = `postgresql://${dbConfig.USER}:${dbConfig.PASSWORD}@${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`;
-const sequelize = new Sequelize(
-  isProduction ? (process.env.DATABASE_URL as string) : connectionString,
-  options
-);
+const dbUri = isProduction
+  ? process.env.POSTGRES_URL + "?sslmode=require"
+  : connectionString;
+const sequelize = new Sequelize(dbUri, options);
 
 (async () => {
   try {
