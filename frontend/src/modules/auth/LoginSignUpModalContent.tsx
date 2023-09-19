@@ -68,8 +68,8 @@ const LoginSignUpModalContent = (props: Props) => {
     }
 
     const authApiCall = isLogin ? signin : signUp
-    await authApiCall(body, ({ isOk, data, error }) => {
-      console.log('data', data)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    await authApiCall(body, ({ isOk, data: _, error }) => {
       if (isOk) onRequestClose(true)
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore

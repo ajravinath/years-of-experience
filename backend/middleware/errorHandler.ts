@@ -15,7 +15,6 @@ const errorHandler = (
 ) => {
   let apiError = new ApiError(error.name, error.message, 400, error.message);
   if (error instanceof SequalizeError) {
-    console.log("sequalize error");
     if (error instanceof ValidationError) {
       apiError = new ApiError(
         error.name,

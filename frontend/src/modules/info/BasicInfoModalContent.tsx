@@ -100,7 +100,6 @@ const BasicInfoModalContent = (props: Props) => {
     if (info) {
       const formData = new FormData()
       formData.append('data', JSON.stringify(body))
-      console.log('info.id: ', info.id)
       if (imageFile?.file) {
         formData.append('image', imageFile.file)
       } else if (!info.image) {
@@ -112,9 +111,7 @@ const BasicInfoModalContent = (props: Props) => {
         navigate(`/${data.id}/profile`, { replace: true })
         onRequestClose(true)
       } else {
-        console.log('eee', error)
         if (error === 'Network Error') {
-          console.log('ee', error)
           addRequest(ProfileApi.putRequest(info.id, formData))
           setInfoOffline(info, imageFile)
           navigate(`/${info.id}/profile`, { replace: true })

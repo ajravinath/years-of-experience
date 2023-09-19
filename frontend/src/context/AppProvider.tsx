@@ -15,12 +15,12 @@ const AppProvider = (props: Props) => {
   }
 
   const handleOffline = useCallback((event: Event) => {
-    console.log('offline', event)
+    console.info('offline', event)
     setOnline(false)
   }, [])
 
   const handleOnline = useCallback((event: Event) => {
-    console.log('online', event)
+    console.info('online', event)
     setOnline(true)
   }, [])
 

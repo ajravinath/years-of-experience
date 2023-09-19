@@ -32,7 +32,7 @@ const getInfo = async (req: Request, res: Response, next: NextFunction) => {
     }
     res.status(200).send(new ApiSuccessResponse(profile));
   } catch (error) {
-    console.log("Inside catch: ", error);
+    console.error("Error: ", error);
     next(error);
   }
 };
