@@ -1,4 +1,5 @@
 # Years of Experience
+[![Netlify Status](https://api.netlify.com/api/v1/badges/30bae7bb-2c2a-4ad7-af51-c7cb9932f6ce/deploy-status)](https://app.netlify.com/sites/years-of-experience/deploys)
 
 A React, Node.js (Express) app to create/manage sharable career experience pages with offline capabilities, personalization etc.
 
