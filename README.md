@@ -82,6 +82,8 @@ npm run dev
 - [nodemon](https://www.npmjs.com/package/nodemon): ^2.0.18
 - [typescript](https://www.npmjs.com/package/typescript): ^4.7.4
 
+> service hosted @ [render.com](https://render.com/) under [api.project-anuja.xyz](https://api.project-anuja.xyz/)
+
 ### Author (Backend)
 
 - Author: Anuja
@@ -166,6 +168,8 @@ To build the frontend for production, use:
 - [postcss](https://www.npmjs.com/package/postcss): ^8.4.14
 - [prettier](https://www.npmjs.com/package/prettier): ^2.7.1
 - [tailwindcss](https://www.npmjs.com/package/tailwindcss): ^3.1.4
+
+> served from [netlify](https://www.netlify.com/) under [app.project-anuja.xyz](https://app.project-anuja.xyz/)
 
 ### Author (Frontend)
 
