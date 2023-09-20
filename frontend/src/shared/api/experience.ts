@@ -94,7 +94,7 @@ export const editExperience = async (
 ): Promise<ApiSuccessResponse<Experience> | ApiErrorResponse> => {
   try {
     const request = ExperienceApi.putRequest(id, experienceId, formData)
-    const { data } = await Api.post<ApiSuccessResponseDTO<ExperienceDTO>>(
+    const { data } = await Api.put<ApiSuccessResponseDTO<ExperienceDTO>>(
       request.getUrl(),
       formData,
       { withCredentials: true },
